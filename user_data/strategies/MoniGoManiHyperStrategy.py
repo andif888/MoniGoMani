@@ -342,6 +342,12 @@ class MoniGoManiHyperStrategy(IStrategy):
         IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
                      space='buy', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
 
+    param = init_vars(buy_params, "buy_downwards_trend_pvt_cross_weight", min_weighted_signal_value,
+                      max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
+    buy_downwards_trend_pvt_cross_weight = \
+        IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
+                     space='buy', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
+
     # Sideways Trend Buy
     # ------------------
 
@@ -416,6 +422,12 @@ class MoniGoManiHyperStrategy(IStrategy):
         IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
                      space='buy', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
 
+    param = init_vars(buy_params, "buy_sideways_trend_pvt_cross_weight", min_weighted_signal_value,
+                      max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
+    buy_sideways_trend_pvt_cross_weight = \
+        IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
+                     space='buy', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
+
     # Upwards Trend Buy
     # -----------------
 
@@ -487,6 +499,12 @@ class MoniGoManiHyperStrategy(IStrategy):
     param = init_vars(buy_params, "buy_upwards_trend_vwap_cross_weight", min_weighted_signal_value,
                       max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
     buy_upwards_trend_vwap_cross_weight = \
+        IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
+                     space='buy', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
+
+    param = init_vars(buy_params, "buy_upwards_trend_pvt_cross_weight", min_weighted_signal_value,
+                      max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
+    buy_upwards_trend_pvt_cross_weight = \
         IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
                      space='buy', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
 
@@ -568,6 +586,12 @@ class MoniGoManiHyperStrategy(IStrategy):
         IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
                      space='sell', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
 
+    param = init_vars(sell_params, "sell_downwards_trend_pvt_cross_weight", min_weighted_signal_value,
+                      max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
+    sell_downwards_trend_pvt_cross_weight = \
+        IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
+                     space='sell', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
+
     # Sideways Trend Sell
     # -------------------
 
@@ -639,6 +663,12 @@ class MoniGoManiHyperStrategy(IStrategy):
     param = init_vars(sell_params, "sell_sideways_trend_vwap_cross_weight", min_weighted_signal_value,
                       max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
     sell_sideways_trend_vwap_cross_weight = \
+        IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
+                     space='sell', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
+
+    param = init_vars(sell_params, "sell_sideways_trend_pvt_cross_weight", min_weighted_signal_value,
+                      max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
+    sell_sideways_trend_pvt_cross_weight = \
         IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
                      space='sell', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
 
@@ -716,6 +746,12 @@ class MoniGoManiHyperStrategy(IStrategy):
         IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
                      space='sell', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
 
+    param = init_vars(sell_params, "sell_upwards_trend_pvt_cross_weight", min_weighted_signal_value,
+                      max_weighted_signal_value, search_threshold_weighted_signal_values, precision)
+    sell_upwards_trend_pvt_cross_weight = \
+        IntParameter(param["min_value"], param["max_value"], default=param["default_value"],
+                     space='sell', optimize=param["opt_and_Load"], load=param["opt_and_Load"])
+
     # Create dictionary to store custom information MoniGoMani will be using in RAM
     custom_info = {
         'open_trades': {}
@@ -742,7 +778,7 @@ class MoniGoManiHyperStrategy(IStrategy):
             'vwap': {'color': '#727272'}
         },
         'subplots': {
-            # Subplots - Each dict defines one additional plot (MACD, ADX, Plus/Minus Direction, RSI)
+            # Subplots - Each dict defines one additional plot (MACD, ADX, Plus/Minus Direction, RSI, PVT)
             'MACD (Moving Average Convergence Divergence)': {
                 'macd': {'color': '#19038a'},
                 'macdsignal': {'color': '#ae231c'}
@@ -754,6 +790,10 @@ class MoniGoManiHyperStrategy(IStrategy):
             },
             'RSI (Relative Strength Index)': {
                 'rsi': {'color': '#7fba3c'}
+            },
+            'PVT (Price Volume Trend)': {
+                'pvt': {'color': '#19038a'},
+                'pvt_sma': {'color': '#ae231c'}
             }
         }
     }
@@ -938,6 +978,10 @@ class MoniGoManiHyperStrategy(IStrategy):
         # VWAP - Volume Weighted Average Price
         dataframe['vwap'] = qtpylib.vwap(dataframe)
 
+        # PVT - Price Volume Trend
+        dataframe['pvt'] = qtpylib.pvt(dataframe)
+        dataframe['pvt_sma'] = ta.SMA(qtpylib.pvt(dataframe), timeperiod=21)
+
         # Weighted Variables
         # ------------------
 
@@ -956,6 +1000,7 @@ class MoniGoManiHyperStrategy(IStrategy):
             dataframe['sma_short_death_cross_weighted_sell_signal'] = 0
             dataframe['sma_short_golden_cross_weighted_buy_signal'] = 0
             dataframe['vwap_cross_weighted_buy_signal'] = dataframe['vwap_cross_weighted_sell_signal'] = 0
+            dataframe['pvt_cross_weighted_buy_signal'] = dataframe['pvt_cross_weighted_sell_signal'] = 0
 
         # Initialize total signal variables (should be 0 = false by default)
         dataframe['total_buy_signal_strength'] = dataframe['total_sell_signal_strength'] = 0
@@ -1084,6 +1129,18 @@ class MoniGoManiHyperStrategy(IStrategy):
                 self.buy_upwards_trend_vwap_cross_weight.value / self.precision
             dataframe['total_buy_signal_strength'] += dataframe['vwap_cross_weighted_buy_signal']
 
+            # Weighted Buy Signal: PVT crosses above PVT_SMA (Price and volume increase)
+            dataframe.loc[(dataframe['trend'] == 'downwards') & qtpylib.crossed_above(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'pvt_cross_weighted_buy_signal'] = \
+                self.buy_downwards_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'sideways') & qtpylib.crossed_above(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'pvt_cross_weighted_buy_signal'] = \
+                self.buy_sideways_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'upwards') & qtpylib.crossed_above(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'pvt_cross_weighted_buy_signal'] = \
+                self.buy_upwards_trend_pvt_cross_weight.value / self.precision
+            dataframe['total_buy_signal_strength'] += dataframe['pvt_cross_weighted_buy_signal']
+
         else:
             # Weighted Buy Signal: ADX above 25 & +DI above -DI (The trend has strength while moving up)
             dataframe.loc[(dataframe['trend'] == 'downwards') & (dataframe['adx'] > 25),
@@ -1178,6 +1235,17 @@ class MoniGoManiHyperStrategy(IStrategy):
             dataframe.loc[(dataframe['trend'] == 'upwards') & qtpylib.crossed_above(dataframe['vwap'], dataframe[
                 'close']), 'total_buy_signal_strength'] += \
                 self.buy_upwards_trend_vwap_cross_weight.value / self.precision
+
+            # Weighted Buy Signal: PVT crosses above PVT_SMA (Price and volume increase)
+            dataframe.loc[(dataframe['trend'] == 'downwards') & qtpylib.crossed_above(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'total_buy_signal_strength'] += \
+                self.buy_downwards_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'sideways') & qtpylib.crossed_above(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'total_buy_signal_strength'] += \
+                self.buy_sideways_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'upwards') & qtpylib.crossed_above(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'total_buy_signal_strength'] += \
+                self.buy_upwards_trend_pvt_cross_weight.value / self.precision
 
         # Check if buy signal should be sent depending on the current trend, using a lookback window to take signals
         # that fired during previous candles into consideration
@@ -1346,6 +1414,18 @@ class MoniGoManiHyperStrategy(IStrategy):
                 self.sell_upwards_trend_vwap_cross_weight.value / self.precision
             dataframe['total_sell_signal_strength'] += dataframe['vwap_cross_weighted_sell_signal']
 
+            # Weighted Sell Signal: PVT crosses below PVT_SMA
+            dataframe.loc[(dataframe['trend'] == 'downwards') & qtpylib.crossed_below(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'pvt_cross_weighted_sell_signal'] = \
+                self.sell_downwards_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'sideways') & qtpylib.crossed_below(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'pvt_cross_weighted_sell_signal'] = \
+                self.sell_sideways_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'upwards') & qtpylib.crossed_below(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'pvt_cross_weighted_sell_signal'] = \
+                self.sell_upwards_trend_pvt_cross_weight.value / self.precision
+            dataframe['total_sell_signal_strength'] += dataframe['pvt_cross_weighted_sell_signal']
+
         else:
             # Weighted Sell Signal: ADX above 25 & +DI below -DI (The trend has strength while moving down)
             dataframe.loc[(dataframe['trend'] == 'downwards') & (dataframe['adx'] > 25),
@@ -1440,6 +1520,17 @@ class MoniGoManiHyperStrategy(IStrategy):
             dataframe.loc[(dataframe['trend'] == 'upwards') & qtpylib.crossed_below(dataframe['vwap'], dataframe[
                 'close']), 'total_sell_signal_strength'] += \
                 self.sell_upwards_trend_vwap_cross_weight.value / self.precision
+
+            # Weighted Sell Signal: PVT crosses below PVT_SMA
+            dataframe.loc[(dataframe['trend'] == 'downwards') & qtpylib.crossed_below(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'total_sell_signal_strength'] += \
+                self.sell_downwards_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'sideways') & qtpylib.crossed_below(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'total_sell_signal_strength'] += \
+                self.sell_sideways_trend_pvt_cross_weight.value / self.precision
+            dataframe.loc[(dataframe['trend'] == 'upwards') & qtpylib.crossed_below(dataframe['pvt'], dataframe[
+                'pvt_sma']), 'total_sell_signal_strength'] += \
+                self.sell_upwards_trend_pvt_cross_weight.value / self.precision
 
         # Check if buy signal should be sent depending on the current trend, using a lookback window to take signals
         # that fired during previous candles into consideration

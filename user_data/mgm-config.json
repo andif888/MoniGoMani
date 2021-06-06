@@ -11,7 +11,7 @@
         "max_trend_total_signal_needed_candles_lookback_window_value": 6,
         "search_threshold_weighted_signal_values": 10,
         "search_threshold_trend_total_signal_needed_candles_lookback_window_value": 1,
-        "number_of_weighted_signals": 9,
+        "number_of_weighted_signals": 10,
         "roi_table_step_size": 5,
         "debuggable_weighted_signal_dataframe": false,
         "use_mgm_logging": false,
