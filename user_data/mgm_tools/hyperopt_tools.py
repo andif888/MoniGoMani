@@ -1,5 +1,10 @@
+###
+# Added this file temporarily until Rikj000's PR is merged into Freqtrade.
+# https://github.com/freqtrade/freqtrade/pull/5014
+###
 
 import io
+import locale
 import logging
 from pathlib import Path
 from typing import Any, Dict, List
@@ -91,7 +96,7 @@ class HyperoptTools():
         if print_json:
             result_dict: Dict = {}
             for s in ['buy', 'sell', 'roi', 'stoploss', 'trailing']:
-                HyperoptTools._params_update_for_json(result_dict, params, s)
+                HyperoptTools._params_update_for_json(result_dict, params, non_optimized, s)
             print(rapidjson.dumps(result_dict, default=str, number_mode=rapidjson.NM_NATIVE))
 
         else:
@@ -104,17 +109,26 @@ class HyperoptTools():
             HyperoptTools._params_pretty_print(params, 'trailing', "Trailing stop:")
 
     @staticmethod
-    def _params_update_for_json(result_dict, params, space: str) -> None:
+    def _params_update_for_json(result_dict, params, non_optimized, space: str) -> None:
         if space in params:
             space_params = HyperoptTools._space_params(params, space)
+            space_non_optimized = HyperoptTools._space_params(non_optimized, space)
+            all_space_params = space_params
+
+            # Include non optimized params if there are any
+            if len(space_non_optimized) > 0:
+                for non_optimized_param in space_non_optimized:
+                    if non_optimized_param not in all_space_params:
+                        all_space_params[non_optimized_param] = space_non_optimized[non_optimized_param]
+
             if space in ['buy', 'sell']:
-                result_dict.setdefault('params', {}).update(space_params)
+                result_dict.setdefault('params', {}).update(all_space_params)
             elif space == 'roi':
                 # Convert keys in min_roi dict to strings because
                 # rapidjson cannot dump dicts with integer keys...
-                result_dict['minimal_roi'] = {str(k): v for k, v in space_params.items()}
+                result_dict['minimal_roi'] = {str(k): v for k, v in all_space_params.items()}
             else:  # 'stoploss', 'trailing'
-                result_dict.update(space_params)
+                result_dict.update(all_space_params)
 
     @staticmethod
     def _params_pretty_print(params, space: str, header: str, non_optimized={}) -> None:
